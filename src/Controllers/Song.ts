@@ -1,10 +1,14 @@
 import express from 'express';
-import { checkAlbum, checkTitle, checkTitleSameAlbum, createSongs, findSongBuyTitle, getAllSongs,updateSongById , deleteSongByID, getSongsStat} from '../Repositories/SongsRepository';
+import { checkAlbum, checkTitle, checkTitleSameAlbum, createSongs, findSongBuyTitle, getAllSongs,updateSongById , deleteSongByID, getSongsStat, getArtistStat, getAlbumStat, getGenreStat, getEachGenreStat, getEachArtistStat, getEachAlbumStat} from '../Repositories/SongsRepository';
 interface Update {
     Title?: string;
     Album?: string;
     Artist?: string;
     Genre?: string;
+}
+interface statResponse{
+    statTitle:string;
+    list?:string[];
 }
 
 export const createSong=async(req:express.Request,res:express.Response)=>{
@@ -18,10 +22,9 @@ export const createSong=async(req:express.Request,res:express.Response)=>{
             const duplicate_title_album=await checkTitleSameAlbum(Album,Title);
             const duplicate_album= await checkAlbum(Artist,Album);
 
-            if(duplicate_title)return res.sendStatus(400).send("Artist can't have songs with the same Title, Change the title Please");
-            if(duplicate_title_album)return res.sendStatus(400).send("Album can't have songs with the same Title, Change the title Please");
-            if(duplicate_album)return res.sendStatus(400).send("Artist can't have more than on Album with the same Name, Change the Album Please");
-            
+            if(duplicate_title)return res.status(400).send("Artist can't have songs with the same Title, Change the title Please");
+            if(duplicate_title_album)return res.status(400).send("Album can't have songs with the same Title, Change the title Please");
+           
             const Song= await createSongs({Title,Artist,Album,Genre});
             return res.status(200).json(Song).end();
             
@@ -73,8 +76,68 @@ export const updateSong=async(req:express.Request,res:express.Response)=>{
 }
 export const getSongStatistics=async(req:express.Request,res:express.Response)=>{
     try {
+        let response={TotalSongs:0}
         let stat= await getSongsStat();
-        res.status(200).send(stat).end();
+        stat?response.TotalSongs=stat:null;
+        res.status(200).json(response).end();
+        
+    } catch (error) {
+        console.log(error);
+    }
+}
+export const getArtistStatistics=async(req:express.Request,res:express.Response)=>{
+    try {
+        let response:statResponse={statTitle:"Artists"}
+        let stat= await getArtistStat();
+        stat?response.list=stat:[];
+        res.status(200).json(response).end();
+        
+    } catch (error) {
+        console.log(error);
+    }
+}
+export const getAlbumStatistics=async(req:express.Request,res:express.Response)=>{
+    try {
+        let stat= await getAlbumStat();
+        res.status(200).json(stat).end();
+        
+    } catch (error) {
+        console.log(error);
+    }
+}
+export const getGenreStatistics=async(req:express.Request,res:express.Response)=>{
+    try {
+        let response:statResponse={statTitle:"Genres"}
+        let stat= await getGenreStat();
+        stat?response.list=stat:[];
+        res.status(200).json(response).end();
+        
+    } catch (error) {
+        console.log(error);
+    }
+}
+export const getEachGenreStatistic=async(req:express.Request,res:express.Response)=>{
+    try {
+        let stats=await getEachGenreStat();
+        res.status(200).json(stats).end();
+        
+    } catch (error) {
+        console.log(error);
+    }
+}
+export const getEachArtistStatistic=async(req:express.Request,res:express.Response)=>{
+    try {
+        let stats=await getEachArtistStat();
+        res.status(200).json(stats).end();
+        
+    } catch (error) {
+        console.log(error);
+    }
+}
+export const getEachAlbumStatistic=async(req:express.Request,res:express.Response)=>{
+    try {
+        let stats=await getEachAlbumStat();
+        res.status(200).json(stats).end();
         
     } catch (error) {
         console.log(error);
